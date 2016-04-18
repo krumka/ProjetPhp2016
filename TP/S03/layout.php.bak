@@ -1,0 +1,232 @@
+<?php
+    class Tableau{
+        public $list;
+        public $title;
+        public $head = false;
+        public $id;
+        private $nbCols;
+        private $css = "layout.css";
+
+        function __construct($list, $title, $head, $nbCols){
+            $this->list = $list;
+            $this->title = $title;
+            $this->head = $head;
+            $this->nbCols = $nbCols;
+        }
+        function getCss(){
+            return $this->css;
+        }
+        function html(){
+            $html = "<table>";
+            if(isset($title)){
+                $html += "\n\t<caption>".$this->title."</caption>";
+            }
+            if($this->head){
+                $html += "\n\t<thead>";
+                $html += "\n\t\t<tr>";
+                foreach($this->list[0] as $th){
+                    $html += "\n\t\t\t<th>".$th."</th>";
+                }
+                $html += "\n\t\t</tr>";
+                $html += "\n\t</thead>";
+            }
+            $html += "\n\t<tbody>";
+            foreach($this->list as $line){
+                if(!$this->head or $line>0){
+                    $html += "<tr>";
+                    foreach($this->list[$line] as $col){
+                        $html += "<td>".$this->list[$line][$col]."</td>";
+                    }
+                    $html += "</tr>";
+                }
+            }
+            $html += "\n\t</tbody>";
+            $html += "\n</table>";
+            return $html;
+        }
+    }
+
+    class Form{
+        public $action;
+        public $method;
+        public $name;
+        public $id;
+        public $onSubmit;
+        public $submit="Envoyer";
+        public $elementsTab;
+        public $legend;
+        public $fieldSet = false;
+
+        function __construct($action, $method, $name, $id, $onSubmit, $submit)
+        {
+            $this->action = $action;
+            $this->method = $method;
+            $this->name = $name;
+            $this->id = $id;
+            $this->onSubmit = $onSubmit;
+            if ($submit != null) {
+                $this->submit = $submit;
+            }
+        }
+        function addLegend($txt){
+            $this->fieldSet = true;
+            $this->legend = "<legend>".$txt."</legend>";
+        }
+        function addElem($elem){
+            array_push($this->elementsTab, $elem);
+        }
+        function addText($id, $name, $label, $maxLength, $minLength, $height, $size, $placeHolder, $onChange, $required, $autoFocus, $disabled){
+            $txt = "<p id=\"".$id."\">";
+            $txt += "\n\t<label for=\"".$name."\">".$label."</label>";
+            $txt += "\n\t<input type=text ";
+            $txt += "id=\"".$name."\" name=\"".$name."\" ";
+            if(isset($maxLength)){
+                $txt += "maxlength=".$maxLength." ";
+            }
+            if(isset($minLength)){
+                $txt += "minlength=".$minLength." ";
+            }
+            if(isset($height)){
+                $txt += "height=".$height." ";
+            }
+            if(isset($size)){
+                $txt += "size=".$size." ";
+            }
+            if(isset($placeHolder)){
+                $txt += "placeholder=".$placeHolder." ";
+            }
+            if(isset($onChange)){
+                $txt += "onChange=\"".$onChange."\" ";
+            }
+            if(isset($required)){
+                $txt += "required ";
+            }
+            if(isset($autoFocus)){
+                $txt += "autofocus ";
+            }
+            if(isset($disabled)){
+                $txt += "disabled ";
+            }
+            $txt += ">";
+            $txt += "\n</p>";
+            array_push($this->elementsTab, $txt);
+        }
+        function addPassword($id, $name, $label, $maxLength, $minLength, $height, $size, $onChange, $required, $autoFocus, $disabled){
+            $txt = "<p id=\"".$id."\">";
+            $txt += "\n\t<label for=\"".$name."\">".$label."</label>";
+            $txt += "\n\t<input type=password ";
+            $txt += "id=\"".$name."\" name=\"".$name."\" ";
+            if(isset($maxLength)){
+                $txt += "maxlength=".$maxLength." ";
+            }
+            if(isset($minLength)){
+                $txt += "minlength=".$minLength." ";
+            }
+            if(isset($height)){
+                $txt += "height=".$height." ";
+            }
+            if(isset($size)){
+                $txt += "size=".$size." ";
+            }
+            if(isset($onChange)){
+                $txt += "onChange=\"".$onChange."\" ";
+            }
+            if(isset($required)){
+                $txt += "required ";
+            }
+            if(isset($autoFocus)){
+                $txt += "autofocus ";
+            }
+            if(isset($disabled)){
+                $txt += "disabled ";
+            }
+            $txt += ">";
+            $txt += "\n</p>";
+            array_push($this->elementsTab, $txt);
+        }
+        function addMail($id, $name, $label, $maxLength, $minLength, $height, $size, $placeHolder, $onChange, $required, $autoFocus, $disabled){
+            $txt = "<p id=\"".$id."\">";
+            $txt += "\n\t<label for=\"".$name."\">".$label."</label>";
+            $txt += "\n\t<input type=email ";
+            $txt += "id=\"".$name."\" name=\"".$name."\" ";
+            if(isset($maxLength)){
+                $txt += "maxlength=".$maxLength." ";
+            }
+            if(isset($minLength)){
+                $txt += "minlength=".$minLength." ";
+            }
+            if(isset($height)){
+                $txt += "height=".$height." ";
+            }
+            if(isset($size)){
+                $txt += "size=".$size." ";
+            }
+            if(isset($placeHolder)){
+                $txt += "placeholder=".$placeHolder." ";
+            }
+            if(isset($onChange)){
+                $txt += "onChange=\"".$onChange."\" ";
+            }
+            if(isset($required)){
+                $txt += "required ";
+            }
+            if(isset($autoFocus)){
+                $txt += "autofocus ";
+            }
+            if(isset($disabled)){
+                $txt += "disabled ";
+            }
+            $txt += ">";
+            $txt += "\n</p>";
+            array_push($this->elementsTab, $txt);
+        }
+        function addDate($id, $name, $label, $maxLength, $minLength, $height, $size, $placeHolder, $onChange, $required, $autoFocus, $disabled){
+            $txt = "<p id=\"".$id."\">";
+            $txt .= "\n\t<label for=\"".$name."\">".$label."</label>";
+            $txt .= "\n\t<input type=date ";
+            $txt .= "id=\"".$name."\" name=\"".$name."\" ";
+            if(isset($maxLength)){
+                $txt .= "maxlength=".$maxLength." ";
+            }
+            if(isset($minLength)){
+                $txt += "minlength=".$minLength." ";
+            }
+            if(isset($height)){
+                $txt += "height=".$height." ";
+            }
+            if(isset($size)){
+                $txt += "size=".$size." ";
+            }
+            if(isset($placeHolder)){
+                $txt += "placeholder=".$placeHolder." ";
+            }
+            if(isset($onChange)){
+                $txt += "onChange=\"".$onChange."\" ";
+            }
+            if(isset($required)){
+                $txt += "required ";
+            }
+            if(isset($autoFocus)){
+                $txt += "autofocus ";
+            }
+            if(isset($disabled)){
+                $txt += "disabled ";
+            }
+            $txt += ">";
+            $txt += "\n</p>";
+            array_push($this->elementsTab, $txt);
+        }
+        function html(){
+            $html = "<form id=\"".$this->id."\" name=\"".$this->name."\" method=\"".$this->method."\" action=\"".$this->action."\" onSubmit=\"".$this->onSubmit."\">";
+            $html += "\n\t";
+            if($this->fieldset){
+                $html += "<fieldset>";
+                $html += $this->legend;
+            }
+            $html += $elem;
+            if($this->fieldset) {
+                $html += "</fieldset>";
+            }
+        }
+    }
+?>

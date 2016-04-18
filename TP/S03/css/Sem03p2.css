@@ -1,0 +1,8 @@
+html{
+    background-color: #ded1b3;
+}
+#date, #hour{
+    margin : 15px;
+    font-weight: bold;
+    color : grey;
+}

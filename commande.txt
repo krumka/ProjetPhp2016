@@ -1,0 +1,25 @@
+SELECT * FROM test.etudiants ;
+
+SELECT count(*) FROM test.etudiants where classe = "1TL1" and Nom like "d%" ;/*compté le nbr d'étu avec un nom qui commence par "d"*/
+
+SELECT classe,count(*) FROM test.etudiants group by Classe ; /*nbr d'étu par classe*/
+
+SELECT left(classe,2),count(*) FROM test.etudiants group by left(classe,2);/* nbr d'élève groupé par année et type d'étude */
+
+SELECT left(classe,2) as sectAnnée,count(*) FROM test.etudiants group by sectAnnée;
+SELECT substring(classe,2,1) as sect,count(*) FROM test.etudiants group by sect; /*nbr d'étu par section*/
+
+SELECT * FROM test.etudiants order by prenom;
+
+SELECT * FROM test.etudiants where prenom is null;
+SELECT Prenom,max(nbr) from (select Prenom,count(prenom) as nbr FROM test.etudiants 
+group by Prenom
+order by nbr desc) as n
+;
+SELECT prenom From test.etudiants group by prenom having count(prenom) = (
+select count(prenom) as nbr FROM test.etudiants group by prenom order by nbr desc limit 1)
+;
+select matricule,concat(Prenom,nom) From test.etudiants where concat(Prenom,nom) in ( 
+SELECT concat(Prenom,nom)as yolo from test.etudiants 
+group by yolo
+having count(matricule)>1)

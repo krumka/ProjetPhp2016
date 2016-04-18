@@ -1,0 +1,61 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link href="css/tab.css" rel="stylesheet" type="text/css">
+    <link href="css/form.css" rel="stylesheet" type="text/css">
+    <link href="css/Sem04p1.css" rel="stylesheet" type="text/css">
+    <script>
+        function showHint(str) {
+            var w;
+            if(document.getElementById("begin").checked){
+                w = "begin";
+            }else if(document.getElementById("in").checked){
+                w = "in";
+            }else if(document.getElementById("end").checked){
+                w = "end";
+            }
+            if (str.length == 0) {
+                document.getElementById("txtHint").innerHTML = "";
+                return;
+            } else {
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        document.getElementById("txtHint").innerHTML = xmlhttp.responseText;
+                    }
+                };
+                xmlhttp.open("GET", "gethint.php?q=" + str + "&w=" + w, true);
+                xmlhttp.send();
+            }
+        }
+        function showCourses(v) {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    document.getElementById("txtTab").innerHTML = xmlhttp.responseText;
+                }
+            };
+            xmlhttp.open("GET", "getcourses.php?c="+v, true);
+            xmlhttp.send();
+        }
+        function clean(){
+            document.getElementById("txtTab").innerHTML = "";
+        }
+    </script>
+</head>
+<body>
+
+<form name="f">
+    <fieldset>
+        <legend>Recherche d'un groupe</legend>
+        <p>(Partie de) Nom recherché(e) : <input type="text" id="search" onkeyup="showHint(this.value);clean()"></p>
+        <p>Type de recherche : <input type="radio" name="searchType" id="begin" typevalue="begin" onchange="showHint(document.getElementById('search').value);clean();"> <label for="begin">Début de ..</label>
+            <input type="radio" name="searchType" id="in" typevalue="in" checked onchange="showHint(document.getElementById('search').value);clean();"> <label for="in">Dans la ..</label>
+            <input type="radio" name="searchType" id="end" typevalue="end" onchange="showHint(document.getElementById('search').value);clean();"> <label for="end">Fin de ..</label>
+            la chaine.</p>
+    </fieldset>
+</form>
+<p>Suggestions: <span id="txtHint"></span></p>
+<div id="txtTab"></div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script>
+        var retJson;
+        function getClass() {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    retJson = xmlhttp.responseText;
+                    document.getElementById("txtClassList").innerHTML = retJson;
+                }
+            };
+            xmlhttp.open("GET", "getClass.php", true);
+            xmlhttp.send();
+        }
+    </script>
+</head>
+<body onload="getClass()">
+
+<form name="f">
+    <fieldset>
+        <legend>Recherche d'un groupe</legend>
+        <p>(Partie de) Nom recherché(e) : <input type="text" id="search"></p>
+    </fieldset>
+</form>
+<p>Suggestions: <span id="txtHint"></span></p>
+<p id="txtClassList"></p>
+</body>
+</html>

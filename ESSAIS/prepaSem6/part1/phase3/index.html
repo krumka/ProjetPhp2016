@@ -1,0 +1,44 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script>
+        function showHint(str) {
+            var w;
+            if(document.getElementById("begin").checked){
+                w = "begin";
+            }else if(document.getElementById("in").checked){
+                w = "in";
+            }else if(document.getElementById("end").checked){
+                w = "end";
+            }
+            if (str.length == 0) {
+                document.getElementById("txtHint").innerHTML = "";
+                return;
+            } else {
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        document.getElementById("txtHint").innerHTML = xmlhttp.responseText;
+                    }
+                };
+                xmlhttp.open("GET", "gethint.php?q=" + str + "&w=" + w, true);
+                xmlhttp.send();
+            }
+        }
+    </script>
+</head>
+<body>
+
+<form name="f">
+    <fieldset>
+        <legend>Recherche d'un groupe</legend>
+        <p>(Partie de) Nom recherché(e) : <input type="text" id="search" onkeyup="showHint(this.value)"></p>
+        <p>Type de recherche : <input type="radio" name="searchType" id="begin" typevalue="begin" onchange="showHint(document.getElementById('search').value)"> <label for="begin">Début de ..</label>
+            <input type="radio" name="searchType" id="in" typevalue="in" checked onchange="showHint(document.getElementById('search').value)"> <label for="in">Dans la ..</label>
+            <input type="radio" name="searchType" id="end" typevalue="end" onchange="showHint(document.getElementById('search').value)"> <label for="end">Fin de ..</label>
+            la chaine.</p>
+    </fieldset>
+</form>
+<p>Suggestions: <span id="txtHint"></span></p>
+</body>
+</html>

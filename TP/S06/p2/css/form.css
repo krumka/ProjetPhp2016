@@ -1,0 +1,27 @@
+input[type="text"]{
+    border-radius: 15px;
+    padding-left:10px;
+    padding : 3px 0px 3px 10px;
+    font-family: Verdana;
+}
+input[type="text"]:focus{
+    border-radius: 15px;
+}
+legend{
+    font-size: 1.2em;
+    font-weight: bold;
+}
+input[type="submit"], input[type="reset"], input[type="button"]{
+    border-radius: 15px;
+    padding:7px;
+    background-color: darkred;
+    color : white;
+    font-family: Verdana;
+    border:none;
+}
+input[type="submit"], input[type="reset"], input[type="button"]:hover{
+    cursor : pointer;
+}
+.nobr{
+    display: inline;
+}

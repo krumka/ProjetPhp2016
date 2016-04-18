@@ -1,0 +1,23 @@
+nav{
+    font-size: 22px;
+    border:2px darkgreen solid;
+    margin:5px;
+    padding:10px;
+    display: inline-block;
+    background-color: darkgray;
+}
+form{
+    display: inline-block;
+}
+input[type="submit"], input[type="reset"], input[type="button"]{
+    border-radius: 15px;
+    padding:7px;
+    margin:3px;
+    background-color: darkblue;
+    color : white;
+    font-family: Verdana;
+    border:none;
+}
+input[type="submit"], input[type="reset"], input[type="button"]:hover{
+    cursor : pointer;
+}
