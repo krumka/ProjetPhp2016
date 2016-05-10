@@ -1,0 +1,26 @@
+.menu h1{
+    height : 1em;
+    font-size : 1.25em;
+    margin : .25em 0 .1em 0;
+}
+.menu{
+    text-transform: capitalize;
+}
+.menu a{
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+title{
+    text-transform: capitalize;
+}
+#comment{
+    color: darkgray;
+    font-style: italic;
+    background-color: rgba(255,255,255,0.25);
+    border:1px grey dotted;
+    border-radius: .5em;
+    padding:5px;
+}
+legend{
+    text-transform : capitalize;
+}

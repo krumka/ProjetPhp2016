@@ -2,6 +2,14 @@ $(document).ready(function(){
     $.get('index.php', 'rq=accueil',function(an) {
         $("#txtAccueil").html(an);
     });
+    $.ajaxSetup({
+        beforeSend : function(xhr){
+            //xhr.setRequestHeader('Set-Cookie',
+            //'PHPSESSID=' + document.cookie.split('yolo32=')[1].split(';')[0]);
+            console.log(document.cookie);
+        },
+        contentType : false
+    })
     $('#o_accueil').addClass("selected");
     $('.menu a').click(function(event){
         event.preventDefault();
@@ -17,7 +25,6 @@ $(document).ready(function(){
                 var rq = f.attr('action');
                 rq = rq.substring(0, rq.lastIndexOf("."));
                 var data = new FormData(f[0]);
-                console.log(data);
                 $.ajax({
                     url: 'index.php?rq='+rq+'&submit='+$(this).attr('name'),
                     type: 'POST',

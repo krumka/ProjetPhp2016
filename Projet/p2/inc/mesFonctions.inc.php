@@ -4,6 +4,7 @@ $lesMenus = [
         'accueil' => 'accueil.html',
         'contact' => 'contact.html',
         'profil' => 'profil.html',
+        'config' => 'config.html',
         'inscription' => 'newAccount.html',
         'connexion' => 'login.html',
     ],
@@ -30,12 +31,16 @@ function getContenu($rq){
     switch($rq){
         case 'accueil' : $contenu = getAccueil();
             break;
+        case 'config' : configForm();
+            break;
         case 'profil' :
         case 'newAccount' :
         case 'contact' :
         case 'login' : $contenu = chargeTemplate($_GET['rq']);
             break;
         case 'testForm' : $contenu = getFormInfo();
+            break;
+        case 'inc/writeConfig' : $contenu = saveConfig();
             break;
         default : $contenu = 'Requète inconnue : '.$_GET['rq'];
     }
@@ -52,9 +57,16 @@ function chargeTemplate($t){
 }
 
 function getFormInfo(){
-    //$liste =array('_G
-    //ET'=>$_GET,'_POST'=>$_POST,'_FILES'=>$_FILES);
     echo "<pre>";
-    echo print_r(array('_GET'=>$_GET,'_POST'=>$_POST,'_FILES'=>$_FILES));
+    print_r(array('_GET'=>$_GET,'_POST'=>$_POST,'_FILES'=>$_FILES));
     echo "</pre>";
+}
+function configForm(){
+    $conf = new Config();
+    echo $conf->getForm();
+}
+function saveConfig(){
+    //print_r($_POST['site']['name']);
+    $conf = new Config();
+    echo $conf->writeConfig();
 }

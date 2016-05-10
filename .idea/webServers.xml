@@ -2,7 +2,7 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="2ef6926f-9252-4d00-b17e-bce6cc7aba32" name="EPHEC" url="http://193.190.65.94">
+      <webServer id="2ef6926f-9252-4d00-b17e-bce6cc7aba32" name="EPHEC" url="http://193.190.65.94/HE201254">
         <fileTransfer host="193.190.65.94" port="21" accessType="FTPS" password="dff3dfc5dfdfdfc4dfc5dfdddf9bdf9ddf9b" username="he201254">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" />

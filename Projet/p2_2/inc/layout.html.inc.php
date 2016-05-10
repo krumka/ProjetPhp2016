@@ -19,8 +19,8 @@
 
 	<header>
 		<h1>
-			<img alt="<?php echo $altLogo ?>" src="<?php echo $logo ?>" />
-			<span><?php echo $siteName ?></span>
+			<img alt="<?php echo $_SESSION['altLogo'] ?>" src="<?php echo $_SESSION['logo'] ?>" />
+			<span><?php echo $_SESSION['siteName'] ?></span>
 		</h1>
 		<nav id="menu" class="menu">
 			<?php echo creerMenu($lesMenus['menu']) ?>

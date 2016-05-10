@@ -14,7 +14,7 @@ else{
 					,'pswd' => 'RemyY3e2'
 					,'dbName' => '1516he201254'
 					,'nom' => 'LAMBINET'
-					,'prenom' => 'R�my'  
+					,'prenom' => 'Remy'
 					,'classe' => '2TL2'  
 					);
 }

@@ -1,0 +1,53 @@
+.menu h1{
+    height : 1em;
+    font-size : 1.25em;
+    margin : .25em 0 .1em 0;
+}
+.menu{
+    text-transform: capitalize;
+}
+#menu a{
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+#sous-menu a{
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+title{
+    text-transform: capitalize;
+}
+#comment{
+    color: darkgray;
+    font-style: italic;
+    background-color: rgba(255,255,255,0.25);
+    border:1px grey dotted;
+    border-radius: .5em;
+    padding:5px;
+}
+legend{
+    text-transform : capitalize;
+}
+#sous-menu h1{
+    margin : 10px;
+}
+#contenu h1{
+    margin:0;
+}
+.success .ui-widget-content{
+    background: #DFD;
+    border:1px solid #8F8;
+    color: #2A2;
+}
+.success .ui-widget-header{
+    background: #080;
+    border:0;
+    color: #fff;
+}
+.success .ui-button{
+    background: #080;
+    color: #fff;
+}
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}

@@ -17,7 +17,6 @@ $(document).ready(function(){
                 var rq = f.attr('action');
                 rq = rq.substring(0, rq.lastIndexOf("."));
                 var data = new FormData(f[0]);
-                console.log(data);
                 $.ajax({
                     url: 'index.php?rq='+rq+'&submit='+$(this).attr('name'),
                     type: 'POST',
