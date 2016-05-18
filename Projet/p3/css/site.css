@@ -1,5 +1,4 @@
 .menu h1{
-    height : 1em;
     font-size : 1.25em;
     margin : .25em 0 .1em 0;
 }
@@ -67,4 +66,44 @@ legend{
 }
 .error .ui-dialog-titlebar-close {
     display: none;
+}
+#profil{
+    background-color: #444;
+    padding:5px;
+    border:1px solid white;
+    border-radius: 5px 5px 5px;
+    font-size: 1em;
+    text-transform: none;
+}
+#profil #pp{
+    text-align: center;
+}
+#profil fieldset #ctn{
+    text-align: right;
+}
+#alerte{
+    position: absolute;
+    background-color: red;
+    color: yellow;
+    top:138px;
+    left:232px;
+    cursor: help;
+}
+.mdp-perdu{
+    background-color: #408;
+}
+.membre{
+    background-color: #040;
+}
+.activation{
+    background-color: #020;
+}
+.reactivation{
+    background-color: #204;
+}
+.sous-admin{
+    background-color: #402;
+}
+.admin{
+    background-color: #400;
 }

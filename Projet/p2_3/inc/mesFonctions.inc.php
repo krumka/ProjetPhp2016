@@ -48,47 +48,44 @@ function creerMenu($menu){
 }
 
 function traiteRequest($rq){
-    //print_r($_SESSION);
     global $envoi;
     global $lesMenus;
     switch($rq){
         case 'accueil' :
-            $envoi['contenu'] = getAccueil();
-            $envoi['sous-menu'] = sousMenu($rq);
+            send('contenu', getAccueil());
+            send('sous-menu',sousMenu($rq));
             break;
         case 'config' :
-            $envoi['contenu'] = configForm();
+            send('contenu',configForm());
             break;
         case 'admin' :
-            $envoi['sous-menu'] = sousMenu($rq);
-            $envoi['contenu'] = accueilAdmin();
+            send('sous-menu',sousMenu($rq));
+            send('contenu', accueilAdmin());
             break;
         case 'profil' :
         case 'newAccount' :
         case 'contact' :
         case 'login' :
-            $envoi['contenu'] = chargeTemplate($_GET['rq']);
-            $envoi['sous-menu'] = sousMenu($rq);
+            send('contenu',chargeTemplate($_GET['rq']));
+            send('sous-menu', sousMenu($rq));
             break;
         case 'testForm' :
-            $envoi['contenu'] = getFormInfo();
+            send('contenu', getFormInfo());
             break;
         case 'inc/writeConfig' :
-            $envoi['message'] = ['text'=>saveConfig(),
-                                'title'=>'Sauvegarde de la config',
-                                'dialogClass'=>'success'];
-            $envoi['siteName'] = $_SESSION['siteName'];
-            $envoi['logo'] = $_SESSION['logo'];
-            $envoi['altLogo'] = $_SESSION['altLogo'];
+            sendMessage('success', 'Sauvegarde de la config', saveConfig());
+            send('siteName', $_SESSION['siteName']);
+            send('logo', $_SESSION['logo']);
+            send('altLogo', $_SESSION['altLogo']);
             break;
         case 'getSession' :
-            $envoi['contenu'] = getSession();
+            send('contenu', getSession());
             break;
         case 'resetSession' :
-            $envoi['contenu'] = resetSession();
+            send('contenu', resetSession());
             break;
         default :
-            $envoi['contenu'] = 'Requète inconnue : '.$_GET['rq'];
+            send('contenu', 'Requète inconnue : '.$_GET['rq']);
     }
 }
 
@@ -152,4 +149,18 @@ function sousMenu($rq){
             break;
         case 'admin' :
     }*/
+}
+function sendMessage($type, $titre, $texte){
+    global $envoi;
+    $envoi["message"]=['text'=>$texte,
+        'title'=>$titre,
+        'dialogClass'=>$type];
+}
+function send($loc, $ctn){
+    global $envoi;
+    $envoi[$loc] = $ctn;
+}
+function sendAlert($type=null, $texte='', $titre=''){
+    global $envoi;
+    if(!isset($envoi["alerte"]));
 }

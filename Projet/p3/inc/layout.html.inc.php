@@ -31,7 +31,6 @@
 	</header><!-- #entete -->
 
 	<nav id="sous-menu" class="menu">
-		<?php echo creerMenu($lesMenus['sous-menu']) ?>
 	</nav><!-- #navigation -->
 
 	<main>

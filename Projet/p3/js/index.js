@@ -12,20 +12,21 @@ $(document).ready(function(){
             }
         ]
     });
-    //$( "#message" ).dialog("close");
-    $.get('index.php', 'rq=accueil',function(an) {
-        traiteRetour(JSON.parse(an));
-    });
+    addClickEventListener('sous-menu');
+    addClickEventListener('menu');
+    $("#o_accueil").click();
+    if($("#alerte").html()==""){
+        $.get('index.php', 'rq=alerte', function(an){
+            traiteRetour(testeJson(an));
+        });
+    }
     $.ajaxSetup({
         beforeSend : function(xhr){
             //xhr.setRequestHeader('Set-Cookie',
             //'PHPSESSID=' + document.cookie.split('yolo32=')[1].split(';')[0]);
         },
         contentType : false
-    })
-    $('#o_accueil').addClass("selected");
-    addClickEventListener('sous-menu');
-    addClickEventListener('menu');
+    });
 });
 
 function traiteRetour(obJs){
@@ -35,8 +36,11 @@ function traiteRetour(obJs){
             case 'sous-menu' :
             case 'contenu' : $('#'+i).html(val);
                 break;
-            case 'alerte' :
+            case 'alert' :
                 alert(val);
+                break;
+            case 'alerte' :
+                $('#'+i).html(traiteAlerte(val));
                 break;
             case 'message' :
                 $( "#"+i ).text(val.text);
@@ -52,6 +56,15 @@ function traiteRetour(obJs){
                 break;
             case 'altLogo' :
                 $("#logo").attr("alt", val);
+                break;
+            case 'click' :
+                $(val).click();
+                break;
+            case 'css' :
+                $(val.location).css(val.property, val.value);
+                break;
+            case 'addClass' :
+                $(val.location).addClass(val.className);
                 break;
             case 'imageFolder' :
             default : alert('Erreur retour : \nCas non traité = '+i+'\n'+val);
@@ -107,10 +120,28 @@ function testeJson(an){
     try{ json = $.parseJSON(an);}
     catch(err){
         json["message"] = {
-            'text' : "Json non valide : "+err,
+            'text' : "Json non valide : </br>"+err+"</br>"+an,
             'title' : "Retour Json Erroné",
             'dialogClass' : "error"
         }
     }
     return json;
+}
+function traiteAlerte(val){
+    if(val==""){
+        return "";
+    }
+    for(var i in val){
+        if(val[i]['titre']==""){
+            if(val[i]['texte']!=""){
+                $("#"+i).remove();
+                return $("#alerte").html()+"<span id='"+i+"'> "+val[i]['texte']+" </span>";
+            }else{
+                $("#"+i).remove();
+            }
+        }else{
+            $("#"+i).remove();
+            return $("#alerte").html()+"<span id='"+i+"' title=\""+val[i]['titre']+"\"> "+val[i]['texte']+" </span>";
+        }
+    }
 }
