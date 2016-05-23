@@ -19,7 +19,7 @@
                 <textarea id="msg" name="msg"></textarea>
             </p>
             <p>
-                <input type="submit" name="send" id="send" value="Envoyer">
+                <input type="submit" name="contact" id="send" value="Envoyer">
             </p>
         </fieldset>
     </form>

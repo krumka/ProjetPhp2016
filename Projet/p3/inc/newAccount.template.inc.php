@@ -23,7 +23,7 @@
                 <input type="email" name="verif_email" id="verif_email">
             </p>
             <p>
-                <input type="submit" name="send" id="send" value="Envoyer">
+                <input type="submit" name="newAccount" id="send" value="Envoyer">
             </p>
         </fieldset>
     </form>

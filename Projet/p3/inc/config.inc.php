@@ -3,7 +3,7 @@ class Config{
     public $name;
     public $defaultName = "inc/config.ini.php";
     public $data;
-    public $writer = "inc/writeConfig.php";
+    public $writer = "testForm.php";
 
     function __construct($nom = ""){
         if($nom == "")$this->name = $this->defaultName;
@@ -23,7 +23,7 @@ class Config{
         foreach($data as $group=>$property){
             if($group!="erreur")$out[]=$this->handleGroup($group, $property);
         }
-        $out[]= "<input id='send' name='send' type=\"submit\" value=\"Envoyer\">";
+        $out[]= "<input id='send' name='config' type=\"submit\" value=\"Envoyer\">";
         $out[]= "</form>";
         return implode("\n", $out);
     }

@@ -1,19 +1,50 @@
 <?php
-$lesMenus = [
-    'menu' => [
-        'accueil' => 'accueil.html',
-        'contact' => 'contact.html',
-        'profil' => 'profil.html',
-        'Administration' => 'admin.html',
-        'inscription' => 'newAccount.html',
-        'connexion' => 'login.html',
-    ]
-];
+function setMenu(){
+    if(isAnonym()||isActiv()){
+        $lesMenus = [
+            'accueil' => 'accueil.html',
+            'contact' => 'contact.html',
+            'connexion' => 'login.html'
+        ];
+    }else if(isReact()){
+        $lesMenus = [
+            'accueil' => 'accueil.html',
+            'contact' => 'contact.html',
+            'profil' => 'profil.html',
+            'deconnexion' => 'logout.html'
+        ];
+    }else if(isMembre()){
+        $lesMenus = [
+            'accueil' => 'accueil.html',
+            'contact' => 'contact.html',
+            'profil' => 'profil.html',
+            'edition' => 'edit.html',
+            'deconnexion' => 'logout.html'
+        ];
+    }else if(isAdmin()||isSousAdmin()){
+        $lesMenus = [
+            'accueil' => 'accueil.html',
+            'contact' => 'contact.html',
+            'profil' => 'profil.html',
+            'edition' => 'edit.html',
+            'Administration' => 'admin.html',
+            'deconnexion' => 'logout.html'
+        ];
+    }else{
+        $lesMenus = [
+            'accueil' => 'accueil.html',
+            'contact' => 'contact.html',
+            'connexion' => 'login.html'
+        ];
+    }
+    return $lesMenus;
+}
 $menuAccueil = [
     getProfil() => ''
 ];
 $menuContact = [
-    'Contact' => ''
+    'Contact' => '',
+    'veuillez remplir ce formulaire pour contacter l\'administrateur' => ''
 ];
 $menuProfil = [
     'Profil' => ''
@@ -28,8 +59,14 @@ $menuAdmin = [
 $menuNewAccount = [
     'Inscription' => ''
 ];
+$menuEdit = [
+    'Edition' => '',
+
+];
 $menuLogin = [
-    'Connexion' => ''
+    'Connexion' => 'onlyLogin.html',
+    'inscription' => 'newAccount.html',
+    'Mot de passe perdu' => 'mdp_perdu.html'
 ];
 $texte = [
     'vous n\'avez pas accès',
@@ -42,19 +79,50 @@ $texte = [
 ];
 
 function creerMenu($menu){
-    $html = "<ul>\n\t";
+    $html = "<ul>";
     foreach($menu as $key => $item){
         if($item!="") {
-            $html .= "<li><a id=\"o_".strtolower($key)."\" href=\"" . $item . "\" onclick='return false' >" . $key . "</a></li>\n";
+            $html .= "<li><a id='o_".strtolower($key)."' href='" . $item . "' onclick='return false' >" . $key . "</a></li>";
         }else{
-            $html .= "<li><h1>" . $key . "</h1></li>\n";
+            $html .= "<li><h1>" . $key . "</h1></li>";
         }
     }
     $html .= "</ul>";
     return $html;
 }
-
+function okDroit($rq){
+    $adminOnly = ['submit_config', 'getSession', 'resetSession', 'adminUser', 'admin', 'config',
+                    'manageSsAdmin', 'submit_manageSsAdmin'];
+    $base = ['accueil', 'contact', 'submit_contact', 'alerte'];
+    $auth = ['profil', 'submit_profil', 'logout', 'edit'];
+    $nonAuth = ['login', 'submit_login', 'onlyLogin',
+                'newAccount', 'submit_newAccount',
+                'mdp_perdu', 'submit_mdp_perdu'];
+    $react = ['edition'];
+    $ok = false;
+    switch(true){
+        case !isAuthentified():
+            $ok =   in_array($rq, $base) || in_array($rq, $nonAuth);
+            break;
+        case isSousAdmin() :
+            if(in_array($rq, $adminOnly))break;
+        case isAdmin() :
+            if($ok = in_array($rq, $base))break;
+            if(isAdmin()&&$ok = in_array($rq, $adminOnly))break;
+        case isReact():
+            if(in_array($rq, $react))break;
+        case isMembre() :
+            if(!isReact() && $ok = in_array($rq, $react))break;
+            $ok = in_array($rq, $base) || in_array($rq, $auth);
+    }
+    if(!$ok) noAccess(monPrint_r(["Requète" => $rq, "Is" => $_SESSION['is']]));
+    return $ok;
+}
 function traiteRequest($rq){
+    if($rq=='testForm'){
+        $rq = 'submit_'.(isset($_GET['submit'])?$_GET['submit'] : '???');
+    }
+    if(! okDroit($rq)) return -1;
     switch($rq){
         case 'accueil' :
             send('contenu', getAccueil());
@@ -67,17 +135,28 @@ function traiteRequest($rq){
             send('sous-menu',sousMenu($rq));
             send('contenu', accueilAdmin());
             break;
+        case 'edit' :
+            send('contenu',chargeTemplate($_GET['rq']));
+            send('sous-menu', sousMenu($rq));
+            send("loadCanvas", "");
+            break;
         case 'profil' :
-        case 'newAccount' :
         case 'contact' :
         case 'login' :
             send('contenu',chargeTemplate($_GET['rq']));
             send('sous-menu', sousMenu($rq));
             break;
+        case 'newAccount' :
+        case 'mdp_perdu' :
+            send('contenu',chargeTemplate($_GET['rq']));
+            break;
+        case 'onlyLogin' :
+            send('contenu',chargeTemplate("login"));
+            break;
         case 'testForm' :
             send('contenu', getFormInfo());
             break;
-        case 'inc/writeConfig' :
+        case 'submit_config' :
             sendMessage('success', 'Sauvegarde de la config', saveConfig());
             send('siteName', $_SESSION['siteName']);
             send('logo', $_SESSION['logo']);
@@ -92,8 +171,11 @@ function traiteRequest($rq){
         case 'adminUser' :
             getUserList();
             break;
-        case 'loginForm' :
+        case 'submit_login' :
             login();
+            break;
+        case 'logout' :
+            logout();
             break;
         case 'alerte' :
             getAlertes();
@@ -102,7 +184,10 @@ function traiteRequest($rq){
             send('contenu', 'Requète inconnue : '.$_GET['rq']);
     }
 }
-
+function noAccess($msg){
+    global $envoi;
+    sendMessage("warn", "Contrôle d'accès", $msg);
+}
 function getAccueil(){
     global $texte;
     if(isset($_SESSION['user'])){
@@ -201,7 +286,8 @@ function getUserList(){
     $answer->closeCursor();//ferme le curseur de la bdd
 }
 function login(){
-    if($_GET['submit']=="send"){
+    if($_GET['submit']=="login"){
+        genereStatuts(false);
         require "dbConnect.php";
         if($_POST['username']!=null&&$_POST['password']!=null){
             $_SESSION['user'] = [];
@@ -237,6 +323,7 @@ function login(){
             }
             if($_SESSION['user']==null){
                 sendMessage("warn", "Connexion Impossible", "Cet utilisateur n'existe pas.");
+                unset($_SESSION['user']);
                 return;
             }
             $answer->closeCursor();
@@ -245,6 +332,7 @@ function login(){
             }else{
                 sendAlert('react');
             }
+            send("menu", creerMenu(setMenu()));
             send('click', "#o_accueil");
             if(!(isAnonym()||isActiv()||isReact())){
                 $_SESSION['is']['edit'] = true;
@@ -257,6 +345,14 @@ function login(){
         }
     }
 }
+function logout(){
+    genereStatuts(true);
+    unset($_SESSION['user']);
+    send('removeClass', 'body');
+    send("menu", creerMenu(setMenu()));
+    send('click', "#o_accueil");
+    sendAlert();
+}
 function chargeProfil(){
     require "dbConnect.php";
     $answer = $db->query('select * from profil');
@@ -264,43 +360,52 @@ function chargeProfil(){
         $_SESSION['profilList'][$d['profilId']] = $d['profilName'];
     }
 }
+function monPrint_r($print){
+    return "<pre>".print_r($print, true)."</pre>";
+}
 function getProfil(){
     if(isset($_SESSION['user'])){
-        $user = $_SESSION['user'];
-        $html = "<div id='profil'>
+        if($_SESSION['user']!= null){
+            $user = $_SESSION['user'];
+            $html = "<div id='profil'>
                 <p>[".$user['user_id']."] ".$user['username']."</p>
                 <p id='pp'>";
-        if($user['avatar']){
-            $html .= "<img src='img/".$user['avatar']."'>";
-        }else{
-            $html .= "<img src='img/unknown.png'>";
-        }
-        $html .= "</p><p>".$user['email']."</p>";
-        $html .= "<fieldset>
+            if($user['avatar']){
+                $html .= "<img src='img/".$user['avatar']."'>";
+            }else{
+                $html .= "<img src='img/unknown.png'>";
+            }
+            $html .= "</p><p>".$user['email']."</p>";
+            $html .= "<fieldset>
                 <legend> Profils </legend>
                 <div id='ctn'>";
-        foreach($user['profil_id'] as $v){
-            $html .= "<p>$v</p>\n";
+            foreach($user['profil_id'] as $v){
+                $html .= "<p>$v</p>\n";
+            }
+            $html .= "</div></fieldset>";
+            $html .= "</div>";
+            return $html;
+        }else{
+            unset($_SESSION['user']);
+            return "Bienvenue";
         }
-        $html .= "</div></fieldset>";
-        $html .= "</div>";
-        return $html;
     }else{
         return "Bienvenue";
     }
 }
-function genereStatuts(){
+function genereStatuts($anonyme){
     $_SESSION['is']['authentified'] = false;
     $_SESSION['is']['edit'] = false;
     foreach($_SESSION['profilList'] as $i){
         $_SESSION['is'][$i] = false;
     }
+    $_SESSION['is']['anonyme'] = $anonyme;
 }
 function getAlertes(){
     if(isReact()){
         sendAlert('react', 'vous devez valider votre nouveau mail', 'avec le lien envoyé dans l\'email qui vous a été envoyé à la nouvelle adresse');
     }
-    foreach($_SESSION['user']['profil_id'] as $k => $i)send("addClass", array("location"=>"body", "className"=>$i));
+    if(isset($_SESSION['user']))foreach($_SESSION['user']['profil_id'] as $k => $i)send("addClass", array("location"=>"body", "className"=>$i));
 }
 function changeCss($location, $property, $value){
     global $envoi;

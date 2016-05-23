@@ -48,7 +48,7 @@
                 <input type="password" name="mdpA" id="mdpA">
             </p>
             <p>
-                <input type="submit" name="send" id="send" value="Envoyer">
+                <input type="submit" name="profil" id="send" value="Envoyer">
             </p>
         </fieldset>
     </form>

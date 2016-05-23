@@ -43,7 +43,7 @@ function traiteRetour(obJs){
                 $('#'+i).html(traiteAlerte(val));
                 break;
             case 'message' :
-                $( "#"+i ).text(val.text);
+                $( "#"+i ).html(val.text);
                 $( "#"+i ).dialog("option", "title", val.title);
                 $( "#"+i ).dialog("option", "dialogClass", val.dialogClass);
                 $( "#"+i ).dialog("open");
@@ -66,13 +66,17 @@ function traiteRetour(obJs){
             case 'addClass' :
                 $(val.location).addClass(val.className);
                 break;
+            case 'removeClass' :
+                $(val).removeClass();
+                break;
+            case 'loadCanvas' :
+                loadCanvas();
+                break;
             case 'imageFolder' :
             default : alert('Erreur retour : \nCas non traité = '+i+'\n'+val);
         }
         switch (i){
             case 'menu' :
-                addClickEventListener(i);
-                break;
             case 'sous-menu' :
                 addClickEventListener(i);
                 break;
@@ -116,13 +120,22 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 function testeJson(an){
+    console.log(an);
     var json = {};
     try{ json = $.parseJSON(an);}
     catch(err){
-        json["message"] = {
-            'text' : "Json non valide : </br>"+err+"</br>"+an,
-            'title' : "Retour Json Erroné",
-            'dialogClass' : "error"
+        if(an!=null){
+            json["message"] = {
+                'text' : "Json non valide : </br>"+err+"</br>"+an,
+                'title' : "Retour Json Erroné",
+                'dialogClass' : "error"
+            }
+        }else{
+            json["message"] = {
+                'text' : "Réponse Vide",
+                'title' : "Retour Json Erroné",
+                'dialogClass' : "error"
+            }
         }
     }
     return json;
@@ -132,6 +145,10 @@ function traiteAlerte(val){
         return "";
     }
     for(var i in val){
+        if(val[i].length==0){
+            $("#"+i).remove();
+            return;
+        }
         if(val[i]['titre']==""){
             if(val[i]['texte']!=""){
                 $("#"+i).remove();

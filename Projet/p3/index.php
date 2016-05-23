@@ -10,8 +10,9 @@ if(!isset($_SESSION['sessionId'])){
     $_SESSION['logo'] = $conf->getData('image', 'folder')."/".$conf->getData('logo', 'name');
     $_SESSION['altLogo'] = $conf->getData('logo', 'alt');
     chargeProfil();
-    genereStatuts();
+    genereStatuts(true);
 }
+setMenu();
 $title = "Accueil";
 if(isset($_GET["rq"])){
     $_SESSION['rqLog'][time()]=$_GET['rq'];

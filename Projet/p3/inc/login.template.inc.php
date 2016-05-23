@@ -1,5 +1,5 @@
 <div id="f_login">
-    <form method="post" action="loginForm.php">
+    <form method="post" action="testForm.php">
         <fieldset>
             <legend>Connexion</legend>
             <p>
@@ -11,11 +11,7 @@
                 <input type="password" name="password" id="password" value="" required>
             </p>
             <p>
-                <input type="submit" name="send" id="send" value="Envoyer">
+                <input type="submit" name="login" id="send" value="Envoyer">
             </p>
         </fieldset>
-        <p>
-            <input type="submit" name="mdp_perdu" id="mdp_perdu" value="Mot de passe perdu">
-        </p>
-    </form>
 </div>
