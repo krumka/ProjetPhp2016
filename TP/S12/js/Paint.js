@@ -92,9 +92,9 @@ function changeThickness(thickness, imgElement) {
   // Return the previously clicked <img> element to its normal state.
   if (previousThicknessElement != null) previousThicknessElement.className = "";
   previousThicknessElement = imgElement;
-    $("#thicknessShower").css("width", thickness);
-    $("#thicknessShower").css("height", thickness);
-    $("#thicknessShower").css("border-radius", thickness);
+    $("#thicknessShower div").css("width", thickness+"px");
+    $("#thicknessShower div").css("height", thickness+"px");
+    $("#thicknessShower div").css("border-radius", thickness+"px");
     console.log("changed thickness");
 }
 

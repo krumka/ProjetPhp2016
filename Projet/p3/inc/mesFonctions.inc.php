@@ -1,28 +1,7 @@
 <?php
 function setMenu(){
-    if(isAnonym()||isActiv()){
-        $lesMenus = [
-            'accueil' => 'accueil.html',
-            'contact' => 'contact.html',
-            'connexion' => 'login.html'
-        ];
-    }else if(isReact()){
-        $lesMenus = [
-            'accueil' => 'accueil.html',
-            'contact' => 'contact.html',
-            'profil' => 'profil.html',
-            'deconnexion' => 'logout.html'
-        ];
-    }else if(isMembre()){
-        $lesMenus = [
-            'accueil' => 'accueil.html',
-            'contact' => 'contact.html',
-            'profil' => 'profil.html',
-            'edition' => 'edit.html',
-            'deconnexion' => 'logout.html'
-        ];
-    }else if(isAdmin()||isSousAdmin()){
-        $lesMenus = [
+    if(isAdmin()||isSousAdmin()){
+        return  [
             'accueil' => 'accueil.html',
             'contact' => 'contact.html',
             'profil' => 'profil.html',
@@ -30,14 +9,23 @@ function setMenu(){
             'Administration' => 'admin.html',
             'deconnexion' => 'logout.html'
         ];
-    }else{
-        $lesMenus = [
+    }else if(isAnonym()||isActiv()){
+        return [
             'accueil' => 'accueil.html',
             'contact' => 'contact.html',
             'connexion' => 'login.html'
         ];
+    }else if(isMembre()){
+        return [
+            'accueil' => 'accueil.html',
+            'contact' => 'contact.html',
+            'profil' => 'profil.html',
+            'edition' => 'edit.html',
+            'deconnexion' => 'logout.html'
+        ];
     }
-    return $lesMenus;
+    sendMessage("error", "Erreur Menu", monPrint_r($_SESSION['is']));
+    return ['erreur' => ''];
 }
 $menuAccueil = [
     getProfil() => ''
@@ -47,20 +35,32 @@ $menuContact = [
     'veuillez remplir ce formulaire pour contacter l\'administrateur' => ''
 ];
 $menuProfil = [
-    'Profil' => ''
+    'Edition du profil' => ''
 ];
 $menuAdmin = [
     'administration' => '',
     'utilisateurs' => 'adminUser.html',
+    'Messages' => 'msg.html',
     'config' => 'config.html',
+    '---Admin only---' => '',
     'affiche session' => 'getSession.html',
     'efface session' => 'resetSession.html'
+];
+$menuAdminLimit = [
+    'administration' => '',
+    'utilisateurs' => 'adminUser.html',
+    'Messages' => 'msg.html',
+    'config' => 'config.html'
 ];
 $menuNewAccount = [
     'Inscription' => ''
 ];
 $menuEdit = [
-    'Edition' => '',
+    'Outil de dessin' => ""
+
+];
+$menuEditReact = [
+    'Outil de dessin non disponible pour votre statut' => ""
 
 ];
 $menuLogin = [
@@ -92,20 +92,23 @@ function creerMenu($menu){
 }
 function okDroit($rq){
     $adminOnly = ['submit_config', 'getSession', 'resetSession', 'adminUser', 'admin', 'config',
-                    'manageSsAdmin', 'submit_manageSsAdmin'];
+                    'manageSsAdmin', 'submit_manageSsAdmin', 'msg'];
     $base = ['accueil', 'contact', 'submit_contact', 'alerte'];
     $auth = ['profil', 'submit_profil', 'logout', 'edit'];
     $nonAuth = ['login', 'submit_login', 'onlyLogin',
                 'newAccount', 'submit_newAccount',
                 'mdp_perdu', 'submit_mdp_perdu'];
-    $react = ['edition'];
+    $react = [];
+    $noSsAdmin = ['getSession', 'resetSession'];
     $ok = false;
     switch(true){
         case !isAuthentified():
             $ok =   in_array($rq, $base) || in_array($rq, $nonAuth);
             break;
         case isSousAdmin() :
-            if(in_array($rq, $adminOnly))break;
+            if(in_array($rq, $noSsAdmin))break;
+            if($ok = in_array($rq, $base))break;
+            if($ok = in_array($rq, $adminOnly))break;
         case isAdmin() :
             if($ok = in_array($rq, $base))break;
             if(isAdmin()&&$ok = in_array($rq, $adminOnly))break;
@@ -134,21 +137,31 @@ function traiteRequest($rq){
         case 'admin' :
             send('sous-menu',sousMenu($rq));
             send('contenu', accueilAdmin());
+            if(isSousAdmin())send('sous-menu',sousMenu($rq."Limit"));
             break;
         case 'edit' :
-            send('contenu',chargeTemplate($_GET['rq']));
+            if(isReact()){
+                send('contenu',"Vous devez valider votre nouveau mail pour pouvoir éditer.");
+                send('sous-menu', sousMenu($rq."React"));
+                break;
+            }
+            send('contenu',chargeTemplate($rq));
             send('sous-menu', sousMenu($rq));
             send("loadCanvas", "");
             break;
         case 'profil' :
+            send('contenu',chargeTemplate($rq));
+            send('sous-menu', sousMenu($rq));
+            if(isset($_SESSION['user']))send("profil", ["pseudo"=> $_SESSION['user']["username"], "email"=> $_SESSION['user']["email"],"avatar" => "<img src=\"img/".$_SESSION["user"]["avatar"]."\" alt=\"avatar\">"]);
+            break;
         case 'contact' :
         case 'login' :
-            send('contenu',chargeTemplate($_GET['rq']));
+            send('contenu',chargeTemplate($rq));
             send('sous-menu', sousMenu($rq));
             break;
         case 'newAccount' :
         case 'mdp_perdu' :
-            send('contenu',chargeTemplate($_GET['rq']));
+            send('contenu',chargeTemplate($rq));
             break;
         case 'onlyLogin' :
             send('contenu',chargeTemplate("login"));
@@ -157,6 +170,10 @@ function traiteRequest($rq){
             send('contenu', getFormInfo());
             break;
         case 'submit_config' :
+            if(isSousAdmin()){
+                noAccess("VOUS NE POUVEZ PAS MODIFIER/SAUVER");
+                break;
+            }
             sendMessage('success', 'Sauvegarde de la config', saveConfig());
             send('siteName', $_SESSION['siteName']);
             send('logo', $_SESSION['logo']);
@@ -180,8 +197,11 @@ function traiteRequest($rq){
         case 'alerte' :
             getAlertes();
             break;
+        case 'msg' :
+            getMsg();
+            break;
         default :
-            send('contenu', 'Requète inconnue : '.$_GET['rq']);
+            send('contenu', 'Requète inconnue : '.$rq);
     }
 }
 function noAccess($msg){
@@ -199,7 +219,6 @@ function getAccueil(){
         return "<h1>Bienvenue</h1>";
     }
 }
-
 function chargeTemplate($t){
     $file = file('inc/'.$t.'.template.inc.php');
     return implode('', $file);
@@ -223,7 +242,6 @@ function saveConfig(){
     $_SESSION['altLogo'] = $conf->getData('logo', 'alt');
     return $return;
 }
-
 function getSession(){
     $tmp = "Contenu de la variable de session : ";
     $tmp .= "<pre>";
@@ -327,8 +345,8 @@ function login(){
                 return;
             }
             $answer->closeCursor();
-            if(isset($_SESSION['user']['profil_id'][3])){
-                sendAlert('react', 'vous devez valider votre nouveau mail');
+            if(isReact()||isActiv()){
+                sendAlert('react', 'vous devez valider votre nouveau mail', 'avec le lien envoyé dans l\'email qui vous a été envoyé à la nouvelle adresse');
             }else{
                 sendAlert('react');
             }
@@ -352,6 +370,7 @@ function logout(){
     send("menu", creerMenu(setMenu()));
     send('click', "#o_accueil");
     sendAlert();
+    sendMessage("Bye", "Au Revoir", "Merci de votre visite.\n à bientôt.");
 }
 function chargeProfil(){
     require "dbConnect.php";
@@ -359,6 +378,7 @@ function chargeProfil(){
     while($d = $answer->fetch()){
         $_SESSION['profilList'][$d['profilId']] = $d['profilName'];
     }
+    $answer->closeCursor();
 }
 function monPrint_r($print){
     return "<pre>".print_r($print, true)."</pre>";
@@ -402,7 +422,7 @@ function genereStatuts($anonyme){
     $_SESSION['is']['anonyme'] = $anonyme;
 }
 function getAlertes(){
-    if(isReact()){
+    if(isReact()||isActiv()){
         sendAlert('react', 'vous devez valider votre nouveau mail', 'avec le lien envoyé dans l\'email qui vous a été envoyé à la nouvelle adresse');
     }
     if(isset($_SESSION['user']))foreach($_SESSION['user']['profil_id'] as $k => $i)send("addClass", array("location"=>"body", "className"=>$i));
@@ -422,3 +442,17 @@ function isMembre(){return $_SESSION['is']['membre'];}
 function isReact(){return $_SESSION['is']['reactivation'];}
 function isMdpp(){return $_SESSION['is']['mdp-perdu'];}
 function isSousAdmin(){return $_SESSION['is']['sous-admin'];}
+function getMsg(){
+    require "dbConnect.php";
+    $answer = $db->query('SELECT * FROM message where msgRecipient ="'.$_SESSION['user']['user_id'].'"');
+    $i = 0;
+    $cont = [];
+    while($d = $answer->fetch()){
+        foreach($d as $k => $v){
+            if(!is_numeric($k))$cont[$i][$k] = $v;
+        }
+        $i++;
+    }
+    $answer->closeCursor();
+    send("contenu", "<h1>Liste des messages</h1>".monPrint_r($cont));
+}

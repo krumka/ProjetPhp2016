@@ -95,6 +95,8 @@
 				setNewColor(col, cal.get(0));
 				cal.data('colorpicker').onChange.apply(cal, [col, HSBToHex(col), HSBToRGB(col)]);
 				changeColor("rgb("+cal.data('colorpicker').fields.eq(1).val()+","+cal.data('colorpicker').fields.eq(2).val()+","+cal.data('colorpicker').fields.eq(3).val()+")", $("#colorSelector"));
+				$("#thicknessShower div").css("background-color", "rgb("+cal.data('colorpicker').fields.eq(1).val()+","+cal.data('colorpicker').fields.eq(2).val()+","+cal.data('colorpicker').fields.eq(3).val()+")");
+
 			},
 			blur = function (ev) {
 				var cal = $(this).parent().parent();

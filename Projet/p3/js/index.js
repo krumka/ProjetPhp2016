@@ -72,6 +72,12 @@ function traiteRetour(obJs){
             case 'loadCanvas' :
                 loadCanvas();
                 break;
+            case 'profil' :
+                for(var i in val){
+                    if(i=="avatar")$("#"+i).parent().prepend(val[i]+"</br>");
+                    $("#"+i).val(val[i]);
+                }
+                break;
             case 'imageFolder' :
             default : alert('Erreur retour : \nCas non traité = '+i+'\n'+val);
         }

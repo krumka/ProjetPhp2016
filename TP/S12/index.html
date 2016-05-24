@@ -25,13 +25,13 @@
       <span><label>Max Size : </label>
         <input type="number" id="imageMaxSize" step="1" max="600" min="200" value="600" /></span>
       <span><label>Thickness :</label>
-        <input type="range" value="3" min="1" max="10" step="1" onchange="changeThickness(this.value, this)"><div id="thicknessShower"></div></span>
+        <input type="range" value="3" min="1" max="10" step="1" onchange="changeThickness(this.value, this)"><span id="thicknessShower"><div></div></span></span>
     </div>
     <div class="CanvasContainer">
       <canvas id="drawingCanvas" width="500" height="300"></canvas>
     </div>
     <div class="Toolbar">
-      - Operations -<br>
+      <p>- Operations -</p></br>
       <button onclick="saveCanvas()">Save the Canvas</button>
       <button onclick="clearCanvas()">Clear the Canvas</button>
       <div id="savedCopyContainer">
