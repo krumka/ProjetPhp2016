@@ -46,6 +46,10 @@ function traiteRetour(obJs){
                 $( "#"+i ).html(val.text);
                 $( "#"+i ).dialog("option", "title", val.title);
                 $( "#"+i ).dialog("option", "dialogClass", val.dialogClass);
+                $("#"+i).dialog("option", "width", 300);
+                if(val.dialogClass=="error"){
+                    $("#"+i).dialog("option", "width", 500);
+                }
                 $( "#"+i ).dialog("open");
                 break;
             case 'siteName' :
@@ -78,8 +82,16 @@ function traiteRetour(obJs){
                     $("#"+i).val(val[i]);
                 }
                 break;
-            case 'dataTable' :
-                $('#tableMessage').dataTable();
+            case 'viewMsg' :
+                $("#message").html(val.msg);
+                $("#message").dialog("option", "title", val.title);
+                $("#message").dialog("option", "width", 700);
+                $( "#"+i ).dialog("option", "dialogClass", val.class);
+                $("#message").dialog("open");
+                handleForm();
+                break;
+            case 'repContactOk' :
+                $("#o_messages").click();
                 break;
             case 'imageFolder' :
             default : alert('Erreur retour : \nCas non traité = '+i+'\n'+val);
@@ -95,60 +107,18 @@ function traiteRetour(obJs){
 function addClickEventListener(id){
     $('#'+id+' a').click(function(event){
         event.preventDefault();
+        $("#message").dialog("close");
+        $("#message").html("");
+        $( "#message" ).dialog("option", "dialogClass", "");
         var e = this;
         var rq = e.getAttribute('href');
         rq = rq.substring(0, rq.lastIndexOf("."));
         $.get('index.php', 'rq='+rq,function(an){
             traiteRetour(testeJson(an));
             $('title').html(e.innerHTML.capitalize());
-            $(":input").keypress(function(e){
-                if($(this).attr("type")=="text"||$(this).attr("type")=="email"){
-                    if($(this).attr("size")<=$(this).val().length){
-                        var i = parseInt($(this).val().length, 10) + 1;
-                        $(this).attr("size", i);
-                    }
-                }
-            });
-            $("textarea").keypress(function(e){
-                if(e.keyCode==13){
-                    console.log($(this).attr("rows")-1);
-                    console.log($(this).val().split("\n").length);
-                    if($(this).val().split("\n").length==$(this).attr("rows")-1){
-                        var i = parseInt($(this).attr("rows"), 10)+1;
-                        console.log("nouvelle valeur pour textarea : "+i);
-                        $(this).attr("rows", i);
-                    }
-                }else{
-                    var lines = $(this).val().split("\n");
-                    console.log(lines[lines.length-1].length);
-                    console.log($(this).attr("cols")-1);
-                    if($(this).attr("cols")-7<=lines[lines.length-1].length){
-                        var i = parseInt($(this).attr("cols"), 10)+1;
-                        console.log("nouvelle valeur pour textarea : "+i);
-                        if(i<190) $(this).attr("cols", i);
-                    }
-                }
-            });
-            $('form').submit(function(e){
-                e.preventDefault();
-                var submitName = $(this).find(':submit').attr('name');
-                var f = $("form");
-                var rq = f.attr('action');
-                rq = rq.substring(0, rq.lastIndexOf("."));
-                var data = new FormData(f[0]);
-                //if(!testForm($(this),submitName))return ;
-                $.ajax({
-                    url: 'index.php?rq='+rq+'&submit='+submitName,
-                    type: 'POST',
-                    data: data,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    success: function (an) {
-                        traiteRetour(testeJson(an));
-                    }
-                });
-            });
+            extendInputForm();
+            if($("#contenu #tableMessage").length!=0)handleMsg();
+            if($("#contenu form").length != 0)handleForm();
         });
         $(".selected").removeClass('selected');
         $(this).addClass("selected");
@@ -194,7 +164,6 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 function testeJson(an){
-    console.log(an);
     var json = {};
     try{ json = $.parseJSON(an);}
     catch(err){
@@ -235,4 +204,77 @@ function traiteAlerte(val){
             return $("#alerte").html()+"<span id='"+i+"' title=\""+val[i]['titre']+"\"> "+val[i]['texte']+" </span>";
         }
     }
+}
+function extendInputForm(){
+    $(":input").keypress(function(e){
+        if($(this).attr("type")=="text"||$(this).attr("type")=="email"){
+            if($(this).attr("size")<=$(this).val().length){
+                var i = parseInt($(this).val().length, 10) + 1;
+                $(this).attr("size", i);
+            }
+        }
+    });
+    $("textarea").keypress(function(e){
+        if(e.keyCode==13){
+            if($(this).val().split("\n").length==$(this).attr("rows")-1){
+                var i = parseInt($(this).attr("rows"), 10)+1;
+                $(this).attr("rows", i);
+            }
+        }else{
+            var lines = $(this).val().split("\n");
+            if($(this).attr("cols")-7<=lines[lines.length-1].length){
+                var i = parseInt($(this).attr("cols"), 10)+1;
+                if(i<190) $(this).attr("cols", i);
+            }
+        }
+    });
+}
+function handleForm(){
+    $('form').submit(function(e){
+        e.preventDefault();
+        var submitName = $(this).find(':submit').attr('name');
+        var f = $("form");
+        var rq = f.attr('action');
+        rq = rq.substring(0, rq.lastIndexOf("."));
+        var data = new FormData(f[0]);
+        if(!testForm($(this),submitName))return ;
+        $("#message").dialog("close");
+        $("#message").html("");
+        $( "#message" ).dialog("option", "dialogClass", "");
+        $.ajax({
+            url: 'index.php?rq='+rq+'&submit='+submitName,
+            type: 'POST',
+            data: data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (an) {
+                traiteRetour(testeJson(an));
+            }
+        });
+    });
+}
+function handleMsg(){
+    var msgTab = $("#contenu #tableMessage tbody");
+    var tr = msgTab.find("tr");
+    for(var i in tr){
+        if($.isNumeric(i)){
+            var td = $($(tr[i]).find("td")[1]);
+            if(td[0]!=null) {
+                if (td.text() == "non") {
+                    td.addClass("nonAnswered");
+                    td.attr("title", "Répondre");
+                    td.attr("onclick", "replyMessage(" + $($(tr[i]).find("td")[0]).text() + ");")
+                }
+            }else{
+                $($($(tr[i]).find("td")[0])[0]).text("Pas de messages");
+            }
+        }
+    }
+    $('#tableMessage').dataTable();
+}
+function replyMessage(id){
+    $.get('index.php', "rq=repMessage&msg="+id,function(an){
+        traiteRetour(testeJson(an));
+    });
 }

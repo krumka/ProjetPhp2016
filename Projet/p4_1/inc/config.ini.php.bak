@@ -5,7 +5,6 @@ comment = "; Les commentaires commencent par ';', comme dans php.ini"
 [site]
 name = "Oh mon bateau oooh"
 comment = "Nom de votre site affiché dans l'entête"
-mail = "admin@ephec.be"
 
 [image]
 folder = "img"
@@ -34,7 +33,7 @@ comment = "Les avatars se trouveront dans le dossier repris ci-dessous qui sera 
 
 [db]
 host = "localhost"
-user = "LAMBINET"
-pswd = "RemyY3e2"
-dbname = "1516he201254"
+user = "student"
+pswd = "2TI"
+dbname = "world"
 comment = "donnez ici les paramètres nécessaires pour se connecter à la base de données depuis le site web"

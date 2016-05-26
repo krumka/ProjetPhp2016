@@ -21,6 +21,7 @@ if(isset($_POST['mail'])){
     $header .= 'Content-type: text/plain; charset=iso-8859-1' . $passage_ligne;
     $header .= "From: \"Serveur Ephec\"<rem.lambi171@gmail.com>".$passage_ligne;
     $header.= "Reply-to: \"Rémy Lambinet\" <rem.lambi171@gmail.com>".$passage_ligne;
+    $header .= "X-Mailer: PHP/" . phpversion();
 }
 
 //Message

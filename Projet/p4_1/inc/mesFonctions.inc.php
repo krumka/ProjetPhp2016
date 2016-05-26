@@ -92,7 +92,7 @@ function creerMenu($menu){
 }
 function okDroit($rq){
     $adminOnly = ['submit_config', 'getSession', 'resetSession', 'adminUser', 'admin', 'config',
-                    'manageSsAdmin', 'submit_manageSsAdmin', 'msg', 'resetRqLogs'];
+                    'manageSsAdmin', 'submit_manageSsAdmin', 'msg', 'resetRqLogs', 'repMessage', 'submit_repContact'];
     $base = ['accueil', 'contact', 'submit_contact', 'alerte'];
     $auth = ['profil', 'submit_profil', 'logout', 'edit'];
     $nonAuth = ['login', 'submit_login', 'onlyLogin',
@@ -154,7 +154,7 @@ function traiteRequest($rq){
             send('sous-menu', sousMenu($rq));
             if(isset($_SESSION['user'])){
                 $profil = ["pseudo"=> $_SESSION['user']["username"], "email"=> $_SESSION['user']["email"]];
-                if(!empty($_SESSION['avatar'])) $profil["avatar"] = "<img src=\"img/".$_SESSION["user"]["avatar"]."\" alt=\"avatar\">";
+                if(!empty($_SESSION['user']['avatar'])) $profil["avatar"] = "<img src=\"img/".$_SESSION["user"]["avatar"]."\" alt=\"avatar\">";
                 send("profil", $profil);
             }
             break;
@@ -209,6 +209,12 @@ function traiteRequest($rq){
             break;
         case 'resetRqLogs' :
             deleteRqLogs();
+            break;
+        case 'repMessage' :
+            repMessage();
+            break;
+        case 'submit_repContact' :
+            saveReponseMsg();
             break;
         default :
             send('contenu', 'Requète inconnue : '.$rq);
@@ -314,7 +320,6 @@ function getSession(){
 }
 function resetSession(){
     session_destroy();
-    $_SESSION['sessionId'] = $sessId;
     $tmp = "Session effacée : ";
     $tmp .= "<pre>";
     $tmp .= print_r($_SESSION, true);
@@ -375,18 +380,21 @@ function login(){
         require "dbConnect.php";
         if($_POST['username']!=null&&$_POST['password']!=null){
             $_SESSION['user'] = [];
-            $answer = $db->query('  select u.userId as "user_id", u.userPseudo as "username", u.userEmail as "email", u.userMdp as "password",
-                                    u.userCreationDate as "create_time", u.userQuestion as "question_secrete", u.userAnswer as "reponse_secrete",
-                                    userAvatar as avatar, group_concat(distinct up.profilId separator \',\') as profil_id
-                                    from user as u inner join user_profil as up on u.userId = up.userId
-                                    where userPseudo="'.$_POST['username'].'"
-                                    group by u.userId, u.userPseudo');
-            while($d = $answer->fetch()){
-                if($_POST['password']==$d['password']){
+            $answer = $db->query('  select userPseudo from user where userPseudo="'.$_POST['username'].'"');
+            if($d = $answer->fetch()){
+                $answer = $db->query('  select u.userId as "user_id", u.userPseudo as "username", u.userEmail as "email", u.userMdp as "password",
+                                        u.userCreationDate as "create_time", u.userQuestion as "question_secrete", u.userAnswer as "reponse_secrete",
+                                        userAvatar as avatar, group_concat(distinct up.profilId separator \',\') as profil_id
+                                        from user as u inner join user_profil as up on u.userId = up.userId
+                                        where (userMdp=md5("'.$_POST['password'].'") AND userPseudo="'.$_POST['username'].'")
+                                        group by u.userId, u.userPseudo');
+                if($d = $answer->fetch()){
                     foreach($d as $key => $value){
                         if(!is_numeric($key)){
                             if($key!="profil_id"){
                                 $_SESSION['user'][$key] = $value;
+                            }else if($key=="password") {
+                                $_SESSION['user'][$key] = $_POST['password'];
                             }else{
                                 $e = explode(",", $value);
                                 $_SESSION['user'][$key] = [];
@@ -402,12 +410,14 @@ function login(){
                     }
                 }else{
                     sendMessage("warn", "Connexion Impossible", "Non concordance entre le pseudo et le mot de passe.");
+                    unset($_SESSION['user']);
+                    genereStatuts(true);
                     return;
                 }
-            }
-            if($_SESSION['user']==null){
+            }else{
                 sendMessage("warn", "Connexion Impossible", "Cet utilisateur n'existe pas.");
                 unset($_SESSION['user']);
+                genereStatuts(true);
                 return;
             }
             $answer->closeCursor();
@@ -510,7 +520,8 @@ function isMdpp(){return $_SESSION['is']['mdp-perdu'];}
 function isSousAdmin(){return $_SESSION['is']['sous-admin'];}
 function getMsg(){
     require "dbConnect.php";
-    $answer = $db->query('  SELECT m.msgId as Id, (Select if((select count(m1.msgId) from message as m1 where m1.msgParentId = m.msgId)=0, "non", "oui")) as Répondu,
+    $answer = $db->query('  SELECT m.msgId as Id, (Select if((select count(m1.msgId) from message as m1 where m1.msgParentId = m.msgId)=0, "non",
+							concat("oui - ", (select group_concat(distinct m2.msgId separator \', \') from message as m2 where m2.msgParentId = m.msgId)))) as Répondu,
                             m.msgCreateTime as "Date", u1.userPseudo as Auteur, u2.userPseudo as Destinataire, m.msgSubject as Sujet
                             FROM message as m
                             inner join user as u1 on m.msgAuthor=u1.userId
@@ -529,9 +540,8 @@ function getMsg(){
     }
     $answer->closeCursor();
     if(empty($cont))echo "hello";
-    $tab = new Tableau($cont, "Liste des messages", true, 6);
+    $tab = new Tableau($cont, "Liste des messages", true, "tableMessage");
     send("contenu", "<h1>Liste des messages</h1>".$tab->html());
-    send("dataTable","test");
 }
 function antiBalises(){
     if(isset($_POST)){
@@ -569,4 +579,99 @@ function sendMail($msg, $subject, $to, $fromMail, $fromName=null, $replyMail = "
         return true;
     }
     return false;
+}
+function repMessage(){
+    require "dbConnect.php";
+    $answer = $db->query('  select u1.userPseudo as auteur, m.msgMail as mail, u2.userPseudo as destinataire, m.msgSubject as sujet , m.msgContenu as msg, m.msgAuthor as destId, m.msgId as msgId, m.msgCreateTime as date
+                            from message as m
+                            inner join user as u1 on m.msgAuthor = u1.userId
+                            inner join user as u2 on m.msgRecipient = u2.userId
+                            where msgId = '.$_GET['msg']);
+    $d = $answer->fetch();
+    $_SESSION['msg']['contenu'] = $contenu = str_replace("\n", "\n</br>", $d["msg"]);
+    $_SESSION['msg']['sujet'] = $subject = "RE : ".$d['sujet'];
+    $_SESSION['msg']['destinataire'] = $auteur = $d['destinataire'];
+    $_SESSION['msg']['destinataireId'] = $d['destId'];
+    $_SESSION['msg']['mail'] = $dest = $d['mail'];
+    $_SESSION['msg']['auteur'] = $d['auteur'];
+    $_SESSION['msg']['msgId'] = $d['msgId'];
+    $_SESSION['msg']['date'] = $d['date'];
+    $msg =
+"<table id='showMessage'>
+    <tr>
+        <td>De : </td>
+        <td>$d[auteur] ($d[mail])</td>
+    </tr>
+    <tr>
+        <td>A : </td>
+        <td>$d[destinataire]</td>
+    </tr>
+    <tr>
+        <td>Sujet : </td>
+        <td>$d[sujet]</td>
+    </tr>
+    <tr>
+        <td>Message : </td>
+        <td style='text-align: left'>$contenu</td>
+    </tr>
+</table>";
+    ob_start();
+    require("inc/reponseMsg.template.inc.php");
+    $msg .= ob_get_clean();
+    send("viewMsg", ["title"=>"Réponse au message n°".$_GET['msg'],"msg"=>$msg, "class" => "msgShow"]);
+    $answer->closeCursor();
+}
+function saveReponseMsg(){
+$_SESSION['msg']['contenu'];
+$_SESSION['msg']['destinataire'];
+$_SESSION['msg']['mail'];
+$_SESSION['msg']['auteur'];
+    $values = "null, {$_SESSION['user']['user_id']}, '{$_SESSION['user']['email']}', '".addslashes($_SESSION['msg']['sujet'])."',"
+     ."'".addslashes($_POST['msg'])."', {$_SESSION['msg']['destinataireId']}, now(), {$_SESSION['msg']['msgId']}";
+    $sql = "INSERT INTO message VALUES ($values);";
+    $db = connecteDb();
+    if($db){
+        $db->query($sql);
+        $lastId=$db->lastInsertId();
+        sendSuccess('Réponse au contact', 'Réponse sauvegardée sous le n°'.$lastId."\n<hr>Un mail a été envoyé<hr>Rechargement de la liste des message en cours...");
+        send('repContactOk', $lastId);
+        $html = [];
+        $html[] = "<table id='contactMail' style='border: 1px solid black;border-collapse: collapse;'>";
+        $html[] = "    <thead>";
+        $html[] = "        <tr>";
+        $html[] = "            <th style='color: white;background-color: black;border-left:white dotted 1px;font-size:1.15em;padding: .4em;text-align: center;'>Courriel</th>";
+        $html[] = "            <th style='color: white;background-color: black;border-left:white dotted 1px;font-size:1.15em;padding: .4em;text-align: center;'>". $_SESSION['msg']['auteur']."(".$_SESSION['msg']['mail'] .")</th>";
+        $html[] = "        </tr>";
+        $html[] = "    </thead>";
+        $html[] = "     <tbody>";
+        $html[] = "         <tr>";
+        $html[] = "             <td>Sujet : </td>";
+        $html[] = "             <td>". $_SESSION['msg']['sujet'] ."</td>";
+        $html[] = "         </tr>";
+        $html[] = "         <tr>";
+        $html[] = "             <td style='border : 1px dotted grey;text-align: center;padding:.3em;'>Message : </td>";
+        $html[] = "             <td style='border : 1px dotted grey;text-align: center;padding:.3em;'><pre style='background-color: rgba(0,0,0,0)'>". $_SESSION['msg']['contenu'] ."</pre></td>";
+        $html[] = "         </tr>";
+        $html[] = "         <tr>";
+        $html[] = "             <td style='border : 1px dotted grey;text-align: center;padding:.3em;'>Réponse : </td>";
+        $html[] = "             <td style='border : 1px dotted grey;text-align: center;padding:.3em;'><pre style='background-color: rgba(0,0,0,0)'>". $_POST['msg'] ."</pre></td>";
+        $html[] = "         </tr>";
+        $html[] = "     </tbody>";
+        $html[] = "</table>";
+        $html = implode("\n", $html);
+        sendMail("<p>Réponse à votre message du {$_SESSION['msg']['date']} : </p>\n</br></br>".$html."\n</br></br></br><p>Bien à vous,</p>\n</br></br><p>Administrateur du serveur EPHEC.</br></br></p>", $_SESSION['msg']['sujet'], $_SESSION['msg']['mail'], $_SESSION['mail'], "Admin Site Rémy Lambinet");
+        sendMail("<p>Réponse à votre message du {$_SESSION['msg']['date']} : </p>\n</br></br>".$html."\n</br></br></br><p>Bien à vous,</p>\n</br></br><p>Administrateur du serveur EPHEC.</br></br></p>", "Le Message a été enregistré sur le site", $_SESSION['mail'], $_SESSION['msg']['mail'], "Admin Site Rémy Lambinet");
+        $db = null;
+    }else{
+        sendError("Erreur SQL","<h1>Une erreur est survenue<h1>");
+    }
+}
+function connecteDb(){
+    $conf = new Config();
+    try{
+        return new PDO("mysql:host=".$conf->getData("db", "host").";dbname=".$conf->getData("db", "dbname"), $conf->getData("db", "user"), $conf->getData("db", "pswd"),array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+    }catch (PDOException $e) {
+        sendMessage('error', 'Erreur Sql', 'Erreur PDO : ' . utf8_encode($e->getMessage()));
+        return false;
+    }
 }

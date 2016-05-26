@@ -3,12 +3,13 @@ interdit = "<?php echo 'Vous n\'êtes pas autorisé à voir ce contenu."'; exit;
 comment = "; Les commentaires commencent par ';', comme dans php.ini"
 
 [site]
-name = "Oh mon bateau oooh"
+name = "Yop"
 comment = "Nom de votre site affiché dans l'entête"
-mail = "admin@ephec.be"
+mail = "rem.lambi171@gmail.com"
 
 [image]
 folder = "img"
+alt = "salut"
 comment = "nom du dossier contenant les images"
 
 [logo]
@@ -38,3 +39,4 @@ user = "LAMBINET"
 pswd = "RemyY3e2"
 dbname = "1516he201254"
 comment = "donnez ici les paramètres nécessaires pour se connecter à la base de données depuis le site web"
+
